@@ -1,0 +1,39 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+
+x = np.array([1, 2, 3, 4, 5], dtype=float)
+y = np.array([2, 4, 6, 8, 10], dtype=float)
+
+optimizers = {
+    "SGD": tf.keras.optimizers.SGD(0.01),
+    "Momentum": tf.keras.optimizers.SGD(
+        0.01, momentum=0.9
+    ),
+    "Adam": tf.keras.optimizers.Adam(0.01)
+}
+
+for name, optimizer in optimizers.items():
+    w = tf.Variable(0.0)
+    losses = []
+
+    for epoch in range(100):
+        with tf.GradientTape() as tape:
+            prediction = w * x
+            loss = tf.reduce_mean((prediction-y)**2)
+
+        gradient = tape.gradient(loss, w)
+        optimizer.apply_gradients([(gradient, w)])
+        losses.append(loss.numpy())
+
+    print(name, "Final Weight:", w.numpy())
+    print(name, "Final Loss:", losses[-1])
+
+    plt.plot(losses, label=name)
+
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.title("Optimizer Comparison")
+plt.legend()
+plt.show()

@@ -1,0 +1,45 @@
+
+import tensorflow as tf
+import networkx as nx
+import matplotlib.pyplot as plt
+
+# RNN model
+model = tf.keras.Sequential([
+    tf.keras.layers.Input(shape=(5,1)),
+    tf.keras.layers.SimpleRNN(4),
+    tf.keras.layers.Dense(1)
+])
+
+model.summary()
+
+# Unfolded RNN visualization
+G = nx.DiGraph()
+
+for t in range(4):
+    G.add_node(f"Input {t+1}")
+    G.add_node(f"Hidden {t+1}")
+    G.add_edge(f"Input {t+1}", f"Hidden {t+1}")
+
+    if t > 0:
+        G.add_edge(f"Hidden {t}", f"Hidden {t+1}")
+
+G.add_node("Output")
+G.add_edge("Hidden 4", "Output")
+
+pos = {
+    "Input 1": (0,0), "Hidden 1": (0,1),
+    "Input 2": (1,0), "Hidden 2": (1,1),
+    "Input 3": (2,0), "Hidden 3": (2,1),
+    "Input 4": (3,0), "Hidden 4": (3,1),
+    "Output": (4,1)
+}
+
+nx.draw(
+    G, pos, with_labels=True,
+    node_color='lightblue',
+    node_size=2000,
+    arrows=True
+)
+
+plt.title("Unfolded RNN Architecture")
+plt.show()

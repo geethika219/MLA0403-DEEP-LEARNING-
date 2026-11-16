@@ -1,0 +1,39 @@
+
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+data = np.sin(np.arange(200) * 0.1)
+
+df = pd.DataFrame({'Value': data})
+print(df.head())
+
+X, y = [], []
+
+for i in range(len(data)-10):
+    X.append(data[i:i+10])
+    y.append(data[i+10])
+
+X = np.array(X).reshape(-1, 10, 1)
+y = np.array(y)
+
+model = tf.keras.Sequential([
+    tf.keras.layers.Input(shape=(10,1)),
+    tf.keras.layers.SimpleRNN(32),
+    tf.keras.layers.Dense(1)
+])
+
+model.compile(optimizer='adam', loss='mse')
+model.fit(X, y, epochs=15, verbose=0)
+
+predictions = model.predict(X, verbose=0)
+
+print("Actual Values:", y[:5])
+print("Predicted Values:", predictions[:5].flatten())
+
+plt.plot(y, label='Actual')
+plt.plot(predictions.flatten(), label='Predicted')
+plt.title("RNN Prediction")
+plt.legend()
+plt.show()

@@ -1,0 +1,46 @@
+
+import tensorflow as tf
+import numpy as np
+import matplotlib.pyplot as plt
+
+X = tf.random.normal((100, 20, 1))
+y = tf.random.normal((100, 1))
+
+def create_model(clip):
+    optimizer = tf.keras.optimizers.Adam(
+        learning_rate=0.01,
+        clipnorm=1.0 if clip else None
+    )
+
+    model = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(20,1)),
+        tf.keras.layers.SimpleRNN(32),
+        tf.keras.layers.Dense(1)
+    ])
+
+    model.compile(
+        optimizer=optimizer,
+        loss='mse'
+    )
+    return model
+
+for clip in [False, True]:
+    model = create_model(clip)
+
+    history = model.fit(
+        X, y,
+        epochs=10,
+        verbose=0
+    )
+
+    label = "With Clipping" if clip else "Without Clipping"
+
+    print(label, "Final Loss:", history.history['loss'][-1])
+
+    plt.plot(history.history['loss'], label=label)
+
+plt.title("Gradient Clipping Analysis")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.legend()
+plt.show()

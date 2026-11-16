@@ -1,0 +1,33 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+X = load_iris().data
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Probabilistic PCA
+pca = PCA(n_components=2, svd_solver='full')
+
+X_reduced = pca.fit_transform(X_scaled)
+
+X_reconstructed = pca.inverse_transform(X_reduced)
+
+error = np.mean((X_scaled-X_reconstructed)**2)
+
+print("Reduced Data:\n", X_reduced[:5])
+print("Reconstructed Data:\n", X_reconstructed[:5])
+print("Reconstruction Error:", error)
+
+plt.scatter(
+    X_scaled[:,0], X_reconstructed[:,0]
+)
+
+plt.xlabel("Original Values")
+plt.ylabel("Reconstructed Values")
+plt.title("PPCA Reconstruction Analysis")
+plt.show()

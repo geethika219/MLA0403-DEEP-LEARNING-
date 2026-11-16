@@ -1,0 +1,64 @@
+
+import tensorflow as tf
+import matplotlib.pyplot as plt
+import numpy as np
+
+from sklearn.datasets import make_moons
+
+X, y = make_moons(n_samples=500, noise=0.3, random_state=42)
+
+def create_model(regularization=None):
+    model = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(2,)),
+        tf.keras.layers.Dense(
+            64, activation='relu',
+            kernel_regularizer=(
+                tf.keras.regularizers.l2(0.01)
+                if regularization == 'l2' else None
+            )
+        ),
+        tf.keras.layers.Dropout(
+            0.5 if regularization == 'dropout' else 0.0
+        ),
+        tf.keras.layers.Dense(32, activation='relu'),
+        tf.keras.layers.Dense(1, activation='sigmoid')
+    ])
+
+    model.compile(
+        optimizer='adam',
+        loss='binary_crossentropy',
+        metrics=['accuracy']
+    )
+    return model
+
+for method in ['none', 'l2', 'dropout', 'early']:
+    model = create_model(method)
+
+    callbacks = []
+    if method == 'early':
+        callbacks = [
+            tf.keras.callbacks.EarlyStopping(
+                monitor='val_loss',
+                patience=5,
+                restore_best_weights=True
+            )
+        ]
+
+    history = model.fit(
+        X, y,
+        epochs=30,
+        validation_split=0.2,
+        callbacks=callbacks,
+        verbose=0
+    )
+
+    print(method, "Final Validation Accuracy:",
+          history.history['val_accuracy'][-1])
+
+    plt.plot(history.history['val_loss'], label=method)
+
+plt.title("Regularization Comparison")
+plt.xlabel("Epoch")
+plt.ylabel("Validation Loss")
+plt.legend()
+plt.show()

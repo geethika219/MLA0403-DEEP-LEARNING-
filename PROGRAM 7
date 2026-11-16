@@ -1,0 +1,28 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+X = np.array([[0,0], [0,1], [1,0], [1,1]])
+y = np.array([0, 0, 0, 1])
+
+weights = np.array([0.5, 0.5])
+bias = -0.7
+
+def step(z):
+    return 1 if z >= 0 else 0
+
+predictions = []
+
+for sample in X:
+    z = np.dot(sample, weights) + bias
+    predictions.append(step(z))
+
+print("Input:\n", X)
+print("Actual Output:", y)
+print("Predicted Output:", predictions)
+
+plt.scatter(X[:,0], X[:,1], c=predictions)
+plt.title("Perceptron Output")
+plt.xlabel("Input 1")
+plt.ylabel("Input 2")
+plt.show()

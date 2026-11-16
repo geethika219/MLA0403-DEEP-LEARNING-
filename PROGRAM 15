@@ -1,0 +1,38 @@
+
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+X = tf.random.normal((1, 10, 1))
+y = tf.constant([[1.0]])
+
+model = tf.keras.Sequential([
+    tf.keras.layers.Input(shape=(10,1)),
+    tf.keras.layers.SimpleRNN(8),
+    tf.keras.layers.Dense(1)
+])
+
+with tf.GradientTape() as tape:
+    prediction = model(X)
+    loss = tf.reduce_mean((prediction-y)**2)
+
+gradients = tape.gradient(
+    loss, model.trainable_variables
+)
+
+for variable, gradient in zip(
+    model.trainable_variables, gradients
+):
+    print("Variable:", variable.name)
+    print("Gradient Norm:", tf.norm(gradient).numpy())
+
+norms = [
+    tf.norm(g).numpy()
+    for g in gradients if g is not None
+]
+
+plt.bar(range(len(norms)), norms)
+plt.title("BPTT Gradient Analysis")
+plt.xlabel("Layer Parameters")
+plt.ylabel("Gradient Norm")
+plt.show()

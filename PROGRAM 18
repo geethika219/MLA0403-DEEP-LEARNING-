@@ -1,0 +1,65 @@
+
+!pip -q install keras-tuner
+
+import tensorflow as tf
+import keras_tuner as kt
+import numpy as np
+import matplotlib.pyplot as plt
+
+data = np.sin(np.arange(200) * 0.1)
+
+X, y = [], []
+
+for i in range(len(data)-10):
+    X.append(data[i:i+10])
+    y.append(data[i+10])
+
+X = np.array(X).reshape(-1,10,1)
+y = np.array(y)
+
+def build_model(hp):
+    units = hp.Choice('units', [16, 32, 64])
+    model_type = hp.Choice(
+        'type', ['RNN', 'LSTM', 'GRU']
+    )
+
+    model = tf.keras.Sequential()
+    model.add(tf.keras.layers.Input(shape=(10,1)))
+
+    if model_type == 'RNN':
+        model.add(tf.keras.layers.SimpleRNN(units))
+    elif model_type == 'LSTM':
+        model.add(tf.keras.layers.LSTM(units))
+    else:
+        model.add(tf.keras.layers.GRU(units))
+
+    model.add(tf.keras.layers.Dense(1))
+
+    model.compile(
+        optimizer='adam',
+        loss='mse'
+    )
+    return model
+
+tuner = kt.RandomSearch(
+    build_model,
+    objective='val_loss',
+    max_trials=6,
+    overwrite=True,
+    directory='tuner_dir',
+    project_name='rnn_comparison'
+)
+
+tuner.search(
+    X, y,
+    epochs=5,
+    validation_split=0.2,
+    verbose=0
+)
+
+best_model = tuner.get_best_models(1)[0]
+
+print("Best Hyperparameters:",
+      tuner.get_best_hyperparameters(1)[0].values)
+print("Best Model Evaluation:",
+      best_model.evaluate(X, y, verbose=0))

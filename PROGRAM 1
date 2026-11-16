@@ -1,0 +1,25 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+# Create vectors
+A = np.array([2, 4, 6])
+B = np.array([1, 3, 5])
+
+# Vector operations
+print("Addition:", A + B)
+print("Subtraction:", A - B)
+print("Dot Product:", np.dot(A, B))
+
+# Create matrices
+M1 = np.array([[1, 2], [3, 4]])
+M2 = np.array([[5, 6], [7, 8]])
+
+print("Matrix Addition:\n", M1 + M2)
+print("Matrix Multiplication:\n", np.dot(M1, M2))
+print("Transpose:\n", M1.T)
+
+plt.imshow(M1, cmap='viridis')
+plt.colorbar()
+plt.title("Matrix Visualization")
+plt.show()

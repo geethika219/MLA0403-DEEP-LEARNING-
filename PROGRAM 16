@@ -1,0 +1,46 @@
+
+import numpy as np
+import tensorflow as tf
+import matplotlib.pyplot as plt
+
+data = np.sin(np.arange(300) * 0.1)
+
+X, y = [], []
+
+for i in range(len(data)-10):
+    X.append(data[i:i+10])
+    y.append(data[i+10])
+
+X = np.array(X).reshape(-1,10,1)
+y = np.array(y)
+
+split = int(0.8 * len(X))
+X_train, X_test = X[:split], X[split:]
+y_train, y_test = y[:split], y[split:]
+
+models = {
+    "RNN": tf.keras.layers.SimpleRNN(32),
+    "LSTM": tf.keras.layers.LSTM(32)
+}
+
+results = {}
+
+for name, layer in models.items():
+    model = tf.keras.Sequential([
+        tf.keras.layers.Input(shape=(10,1)),
+        layer,
+        tf.keras.layers.Dense(1)
+    ])
+
+    model.compile(optimizer='adam', loss='mse')
+    model.fit(X_train, y_train, epochs=10, verbose=0)
+
+    loss = model.evaluate(X_test, y_test, verbose=0)
+    results[name] = loss
+
+    print(name, "Test Loss:", loss)
+
+plt.bar(results.keys(), results.values())
+plt.title("RNN vs LSTM Performance")
+plt.ylabel("Mean Squared Error")
+plt.show()

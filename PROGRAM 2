@@ -1,0 +1,25 @@
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+data = pd.DataFrame({
+    'X': [2, 4, 6, 8, 10],
+    'Y': [1, 3, 5, 7, 9]
+})
+
+print("Dataset:\n", data)
+
+cov = np.cov(data.T)
+print("Covariance Matrix:\n", cov)
+
+values, vectors = np.linalg.eig(cov)
+
+print("Eigenvalues:", values)
+print("Eigenvectors:\n", vectors)
+
+plt.scatter(data['X'], data['Y'])
+plt.xlabel("X")
+plt.ylabel("Y")
+plt.title("Covariance Data Visualization")
+plt.show()

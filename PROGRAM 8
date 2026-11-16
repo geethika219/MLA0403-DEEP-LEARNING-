@@ -1,0 +1,46 @@
+
+import numpy as np
+import matplotlib.pyplot as plt
+
+np.random.seed(42)
+
+X = np.array([[0,0], [0,1], [1,0], [1,1]])
+y = np.array([[0], [1], [1], [0]])
+
+W1 = np.random.randn(2, 4)
+W2 = np.random.randn(4, 1)
+
+lr = 0.5
+losses = []
+
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+for epoch in range(10000):
+    # Forward propagation
+    z1 = X @ W1
+    a1 = sigmoid(z1)
+
+    z2 = a1 @ W2
+    a2 = sigmoid(z2)
+
+    loss = np.mean((y-a2)**2)
+    losses.append(loss)
+
+    # Backpropagation
+    dz2 = (a2-y) * a2 * (1-a2)
+    dW2 = a1.T @ dz2
+
+    dz1 = (dz2 @ W2.T) * a1 * (1-a1)
+    dW1 = X.T @ dz1
+
+    W1 -= lr * dW1
+    W2 -= lr * dW2
+
+print("Predicted Output:\n", np.round(a2, 3))
+
+plt.plot(losses)
+plt.title("Backpropagation Loss")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.show()

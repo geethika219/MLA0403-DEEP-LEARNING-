@@ -1,0 +1,66 @@
+import numpy as np
+import matplotlib.pyplot as plt
+import tensorflow as tf
+
+from tensorflow.keras.datasets import mnist
+from tensorflow.keras.layers import Input, Dense
+from tensorflow.keras.models import Model
+
+# Load MNIST dataset
+(x_train, _), (x_test, _) = mnist.load_data()
+
+# Normalize data
+x_train = x_train.astype('float32') / 255.0
+x_test = x_test.astype('float32') / 255.0
+
+x_train = x_train.reshape(-1, 784)
+x_test = x_test.reshape(-1, 784)
+
+# Create Deep Belief Network-style encoder
+inputs = Input(shape=(784,))
+
+hidden1 = Dense(256, activation='sigmoid')(inputs)
+hidden2 = Dense(128, activation='sigmoid')(hidden1)
+hidden3 = Dense(64, activation='sigmoid')(hidden2)
+
+outputs = Dense(784, activation='sigmoid')(hidden3)
+
+model = Model(inputs, outputs)
+
+model.compile(
+    optimizer='adam',
+    loss='binary_crossentropy'
+)
+
+# Train representation model
+model.fit(
+    x_train, x_train,
+    epochs=5,
+    batch_size=128,
+    validation_split=0.1
+)
+
+# Extract learned representations
+encoder = Model(inputs, hidden3)
+features = encoder.predict(x_test[:10])
+
+print("Learned Representation Shape:", features.shape)
+
+# Visualize original images
+plt.figure(figsize=(10, 4))
+
+for i in range(10):
+    plt.subplot(2, 5, i + 1)
+    plt.imshow(x_test[i].reshape(28, 28), cmap='gray')
+    plt.axis('off')
+
+plt.suptitle("MNIST Input Images")
+plt.show()
+
+# Visualize learned features
+plt.imshow(features, cmap='viridis', aspect='auto')
+plt.title("Deep Representation Learning")
+plt.xlabel("Hidden Features")
+plt.ylabel("Images")
+plt.colorbar()
+plt.show()

@@ -1,0 +1,68 @@
+import numpy as np
+import pandas as pd
+import networkx as nx
+import matplotlib.pyplot as plt
+
+from pgmpy.models import DiscreteBayesianNetwork
+from pgmpy.factors.discrete import TabularCPD
+from pgmpy.sampling import BayesianModelSampling
+from pgmpy.inference import VariableElimination
+
+# Create graphical model
+model = DiscreteBayesianNetwork([
+    ('Rain', 'WetGrass'),
+    ('Sprinkler', 'WetGrass')
+])
+
+# Define probabilities
+cpd1 = TabularCPD('Rain', 2, [[0.7], [0.3]])
+cpd2 = TabularCPD('Sprinkler', 2, [[0.6], [0.4]])
+
+cpd3 = TabularCPD(
+    'WetGrass', 2,
+    [[0.99, 0.8, 0.8, 0.1],
+     [0.01, 0.2, 0.2, 0.9]],
+    evidence=['Rain', 'Sprinkler'],
+    evidence_card=[2, 2]
+)
+
+model.add_cpds(cpd1, cpd2, cpd3)
+
+# Generate samples
+sampler = BayesianModelSampling(model)
+samples = sampler.forward_sample(
+    size=1000,
+    show_progress=False
+)
+
+df = pd.DataFrame(samples)
+print("Generated Samples:")
+print(df.head())
+
+# Display probabilities
+print("\nSample Probabilities:")
+print(df.mean())
+
+# Probabilistic inference
+infer = VariableElimination(model)
+result = infer.query(variables=['WetGrass'])
+
+print("\nInference Result:")
+print(result)
+
+# Plot graphical model
+G = nx.DiGraph(model.edges())
+nx.draw(
+    G, with_labels=True,
+    node_color='lightgreen',
+    node_size=2500,
+    arrows=True
+)
+plt.title("Graphical Model")
+plt.show()
+
+# Plot sampling results
+df.mean().plot(kind='bar')
+plt.title("Probabilistic Sampling Results")
+plt.ylabel("Probability of State 1")
+plt.show()

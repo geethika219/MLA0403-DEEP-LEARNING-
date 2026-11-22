@@ -1,0 +1,106 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.metrics import mean_squared_error
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
+
+# Generate new samples
+vae_samples = decoder.predict(
+    np.random.randn(100, 2),
+    verbose=0
+)
+
+gan_samples = generator.predict(
+    np.random.randn(100, 100),
+    verbose=0
+)
+
+# Calculate evaluation metrics
+def evaluate_model(images):
+
+    diversity = np.mean(np.std(images, axis=0))
+
+    mean_pixel = np.mean(images)
+
+    std_pixel = np.std(images)
+
+    return diversity, mean_pixel, std_pixel
+
+vae_metrics = evaluate_model(vae_samples)
+gan_metrics = evaluate_model(gan_samples)
+
+# Create comparison table
+results = pd.DataFrame({
+    'Metric': [
+        'Pixel Diversity',
+        'Mean Pixel Value',
+        'Pixel Standard Deviation'
+    ],
+    'VAE': vae_metrics,
+    'GAN': gan_metrics
+})
+
+print("Generative Model Comparison:")
+print(results)
+
+# Calculate reconstruction-style error
+reference = np.zeros_like(vae_samples)
+
+vae_error = mean_squared_error(
+    reference, vae_samples
+)
+
+gan_error = mean_squared_error(
+    reference, gan_samples
+)
+
+print("\nVAE Sample MSE:", vae_error)
+print("GAN Sample MSE:", gan_error)
+
+# Visualize generated samples
+plt.figure(figsize=(12, 5))
+
+for i in range(10):
+
+    plt.subplot(2, 10, i + 1)
+    plt.imshow(vae_samples[i].reshape(28, 28), cmap='gray')
+    plt.axis('off')
+
+    plt.subplot(2, 10, i + 11)
+    plt.imshow(gan_samples[i].reshape(28, 28), cmap='gray')
+    plt.axis('off')
+
+plt.suptitle("VAE vs GAN Generated Images")
+plt.show()
+
+# PCA visualization
+combined = np.vstack([vae_samples, gan_samples])
+
+combined = StandardScaler().fit_transform(combined)
+
+pca = PCA(n_components=2)
+reduced = pca.fit_transform(combined)
+
+plt.scatter(
+    reduced[:100, 0],
+    reduced[:100, 1],
+    label='VAE',
+    alpha=0.6
+)
+
+plt.scatter(
+    reduced[100:, 0],
+    reduced[100:, 1],
+    label='GAN',
+    alpha=0.6
+)
+
+plt.xlabel("Principal Component 1")
+plt.ylabel("Principal Component 2")
+plt.title("VAE and GAN Output Comparison")
+plt.legend()
+plt.show()
+
+print("\nGenerative Model Evaluation Completed")

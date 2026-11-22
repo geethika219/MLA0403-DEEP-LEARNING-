@@ -1,0 +1,59 @@
+import numpy as np
+import matplotlib.pyplot as plt
+from scipy.special import expit
+
+np.random.seed(42)
+
+# Initialize RBM parameters
+n_visible = 6
+n_hidden = 3
+
+W = np.random.randn(n_visible, n_hidden) * 0.1
+vb = np.zeros(n_visible)
+hb = np.zeros(n_hidden)
+
+# Training data
+data = np.random.binomial(1, 0.5, (100, n_visible))
+
+errors = []
+
+# Contrastive Divergence training
+for epoch in range(100):
+
+    total_error = 0
+
+    for v0 in data:
+
+        # Positive phase
+        ph = expit(np.dot(v0, W) + hb)
+        h0 = np.random.binomial(1, ph)
+
+        # Gibbs sampling
+        pv = expit(np.dot(h0, W.T) + vb)
+        vk = np.random.binomial(1, pv)
+
+        ph1 = expit(np.dot(vk, W) + hb)
+
+        # Update weights
+        W += 0.01 * (
+            np.outer(v0, ph) - np.outer(vk, ph1)
+        )
+
+        vb += 0.01 * (v0 - vk)
+        hb += 0.01 * (ph - ph1)
+
+        total_error += np.mean((v0 - pv) ** 2)
+
+    errors.append(total_error / len(data))
+
+# Display reconstruction error
+plt.plot(errors)
+plt.xlabel("Epoch")
+plt.ylabel("Reconstruction Error")
+plt.title("Contrastive Divergence Analysis")
+plt.show()
+
+print("Final Reconstruction Error:", errors[-1])
+print("Gibbs Sampling Completed")
+print("Learned Weights:")
+print(W)

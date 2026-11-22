@@ -1,0 +1,62 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.datasets import load_iris
+from sklearn.preprocessing import StandardScaler
+from sklearn.decomposition import FactorAnalysis
+
+# Load dataset
+data = load_iris()
+X = data.data
+
+# Convert into DataFrame
+df = pd.DataFrame(X, columns=data.feature_names)
+
+print("Original Dataset:")
+print(df.head())
+
+# Standardize the data
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+# Apply Factor Analysis
+fa = FactorAnalysis(n_components=2, random_state=42)
+factors = fa.fit_transform(X_scaled)
+
+# Display latent factors
+factor_df = pd.DataFrame(
+    factors,
+    columns=['Factor 1', 'Factor 2']
+)
+
+print("\nLatent Factors:")
+print(factor_df.head())
+
+# Display factor loadings
+loadings = pd.DataFrame(
+    fa.components_.T,
+    index=data.feature_names,
+    columns=['Factor 1', 'Factor 2']
+)
+
+print("\nFactor Loadings:")
+print(loadings)
+
+# Visualize factors
+plt.figure(figsize=(8, 5))
+
+plt.scatter(
+    factors[:, 0],
+    factors[:, 1],
+    c=data.target,
+    cmap='viridis'
+)
+
+plt.xlabel("Factor 1")
+plt.ylabel("Factor 2")
+plt.title("Factor Analysis Visualization")
+plt.colorbar(label="Iris Class")
+plt.show()
+
+print("\nFactor Analysis Completed Successfully")
